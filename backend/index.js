@@ -1,14 +1,13 @@
 import 'dotenv/config'
-import express, {json} from 'express'
+import express from 'express'
 import cors from 'cors'
 import session from 'express-session'
-
-
 
 const app = express()
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+
 app.use(
     session({
         secret: 'mySecretKey123',
@@ -21,16 +20,15 @@ app.use(
     })
 )
 
-app.use(
-    cors({
-        origin: 'http://localhost:63342',
-        credentials: true
-    })
-)
-app.use(router)
+app.use(cors({
+    origin: 'http://localhost:63342',
+    credentials: true
+}))
 
-let users = []
-
+// Եթե դեռ չունես router
+app.get('/', (req, res) => {
+    res.send('Server is running!')
+})
 
 app.listen(process.env.APP_PORT || 3000, () => {
     console.log('server started')
