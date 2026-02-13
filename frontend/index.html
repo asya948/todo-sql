@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Todo List · Modern UI</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg-1:#0f1226;
+      --bg-2:#101a3f;
+      --card-bg: rgba(255,255,255,.08);
+      --card-brd: rgba(255,255,255,.18);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --text: #e9ecf1;
+      --muted: #b9c2d3;
+      --primary:#6ea8fe;
+      --warning:#ffd24d;
+      --success:#63d297;
+      --danger:#ff6b6b;
+    }
+
+    body{
+      min-height:100vh;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #2b68ff22, transparent 60%),
+        radial-gradient(1000px 700px at 110% 10%, #24d6a922, transparent 60%),
+        linear-gradient(160deg, var(--bg-1), var(--bg-2));
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .app-wrap{ max-width: 900px; margin: clamp(24px, 4vh, 56px) auto; padding: 0 16px; }
+    .glass-card{
+      background: var(--card-bg);
+      border: 1px solid var(--card-brd);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .app-header{ padding: 28px 28px 12px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+    .app-title{ margin:0; font-weight: 800; letter-spacing:.3px; }
+    .sub{ color: var(--muted); font-size: .95rem; }
+
+    .form-zone{ padding: 0 28px 20px; }
+    .form-control, .form-select{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.18);
+      color: var(--text);
+    }
+    .form-control::placeholder{ color:#c6cbd8aa; }
+    .form-control:focus, .form-select:focus{
+      border-color: #8bb3ff;
+      box-shadow: 0 0 0 .2rem rgba(142,168,255,.18);
+      color: var(--text);
+    }
+
+    .list-holder{ padding: 8px 8px 22px; }
+    .list-group{
+      --bs-list-group-bg: transparent;
+      --bs-list-group-border-color: rgba(255,255,255,.10);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .list-group-item{
+      display:flex; align-items:center; justify-content:space-between;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      color: var(--text);
+      padding: 14px 16px;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease;
+      border-color: rgba(255,255,255,.10);
+    }
+    .list-group-item:hover{
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,.20);
+    }
+
+    .task-left{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .task-text{ font-weight: 600; letter-spacing:.2px; }
+    .task-status{ border-radius: 999px; padding: .25rem .6rem; font-weight:700; letter-spacing:.2px; }
+    .status-pending{ background: #64748b33; border:1px solid #94a3b888; color:#e2e8f0;}
+    .status-progress{ background: #997a0033; border:1px solid #ffd24d99; color:#ffe08a;}
+    .status-done{ background: #0e7b5533; border:1px solid #63d297aa; color:#b9f3d3;}
+    .done .task-text{ text-decoration: line-through; opacity:.8; }
+
+    .btn-ghost{
+      border:1px solid rgba(255,255,255,.20);
+      color: var(--text);
+      background: transparent;
+      padding: .35rem .7rem;
+      border-radius: 10px;
+      transition: background .2s ease, transform .15s ease, border-color .2s ease;
+    }
+    .btn-ghost:hover{ background: rgba(255,255,255,.08); transform: translateY(-1px); }
+    .btn-edit{ border-color:#ffd24daa; }
+    .btn-edit:hover{ background: #ffd24d26; }
+    .btn-del{ border-color:#ff8d8daa; }
+    .btn-del:hover{ background:#ff6b6b26; }
+    .btn-add{
+      border:none;
+      background: linear-gradient(135deg, #6ea8fe, #3ddab6);
+      color:#0b1020;
+      font-weight:800;
+      letter-spacing:.3px;
+      box-shadow: 0 8px 20px rgba(16, 63, 236, .25);
+      transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+      border-radius: 12px;
+    }
+    .btn-add:hover{ transform: translateY(-1px); filter: brightness(1.05); }
+    .btn-add:active{ transform: translateY(0); box-shadow: 0 4px 12px rgba(16,63,236,.18); }
+
+    .hint{ color: var(--muted); font-size: .9rem; padding: 0 28px 26px; }
+    .divider{ height:1px; background: rgba(255,255,255,.10); margin: 0 28px 8px; }
+
+    .empty{
+      text-align:center; padding: 18px; color: var(--muted);
+      border:1px dashed rgba(255,255,255,.18); border-radius: 14px;
+      background: rgba(255,255,255,.03);
+    }
+
+    @media (max-width: 575.98px){
+      .app-header{ flex-direction:column; align-items:flex-start; }
+      .sub{ font-size:.9rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrap">
+    <div class="glass-card">
+
+      <div class="app-header">
+        <div>
+          <h1 class="app-title h3 mb-1">Todo List</h1>
+          <div class="sub">Կարգավորիր օրվա առաջնահերթությունները՝ պարզ ու արագ 👇</div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <button id="btnClear" class="btn btn-ghost">Մաքրել բոլորը</button>
+          <button id="btnSeed" class="btn btn-ghost">Լցնել օրինակներով</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="form-zone">
+        <form id="todoForm" class="row g-2">
+          <div class="col-md-7">
+            <input id="taskInput" type="text" class="form-control" placeholder="Գրիր առաջադրանքը…" autocomplete="off">
+          </div>
+          <div class="col-md-3">
+            <select id="statusSelect" class="form-select">
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          <div class="col-md-2 d-grid">
+            <button class="btn btn-add" type="submit">Ավելացնել</button>
+          </div>
+          <input type="hidden" id="editId" value="">
+        </form>
+      </div>
+
+      <div class="list-holder">
+        <ul class="list-group" id="todoList"></ul>
+        <div id="emptyState" class="empty d-none">Այս պահին առաջադրանք չկա։ Ավելացրու առաջինը վերևում ⬆️</div>
+      </div>
+
+      <div class="hint">
+        💾 Պահվում է localStorage-ում։ ✍️ Կրկնակի click՝ արագ խմբագրում, ☑️ Status-ը փոխիր_dropdown-ից, 🗑️ ջնջիր կոճակով:
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    const KEY = 'todo_v2';
+    /** @type {{id:string,text:string,status:'Pending'|'In Progress'|'Completed',created:number}[]} */
+    let items = [];
+
+    const $list = document.getElementById('todoList');
+    const $empty = document.getElementById('emptyState');
+    const $form = document.getElementById('todoForm');
+    const $input = document.getElementById('taskInput');
+    const $status = document.getElementById('statusSelect');
+    const $editId = document.getElementById('editId');
+    const $btnClear = document.getElementById('btnClear');
+    const $btnSeed = document.getElementById('btnSeed');
+
+    // --- Storage helpers
+    const save = () => localStorage.setItem(KEY, JSON.stringify(items));
+    const load = () => {
+      try {
+        items = JSON.parse(localStorage.getItem(KEY) || '[]');
+        if (!Array.isArray(items)) items = [];
+      } catch (e){ items = []; }
+    };
+
+    // --- Utilities
+    const uid = () => Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4);
+    const statusClass = (s) => s === 'Completed' ? 'status-done' : (s === 'In Progress' ? 'status-progress' : 'status-pending');
+    const liRow = (it) => {
+      const isDone = it.status === 'Completed';
+      return `
+        <li class="list-group-item ${isDone ? 'done' : ''}" data-id="${it.id}">
+          <div class="task-left flex-grow-1">
+            <span class="task-text" title="${new Date(it.created).toLocaleString()}">${escapeHtml(it.text)}</span>
+            <span class="task-status ${statusClass(it.status)}">${it.status}</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <select class="form-select form-select-sm status-changer" style="width:150px">
+              <option ${it.status==='Pending'?'selected':''}>Pending</option>
+              <option ${it.status==='In Progress'?'selected':''}>In Progress</option>
+              <option ${it.status==='Completed'?'selected':''}>Completed</option>
+            </select>
+            <button class="btn-ghost btn-edit btn-sm">Edit</button>
+            <button class="btn-ghost btn-del btn-sm">Delete</button>
+          </div>
+        </li>
+      `;
+    };
+
+    function render(){
+      if (!items.length){
+        $list.innerHTML = '';
+        $empty.classList.remove('d-none');
+        return;
+      }
+      $empty.classList.add('d-none');
+      // Sort by created descending (newest first)
+      const html = items.slice().sort((a,b)=>b.created-a.created).map(liRow).join('');
+      $list.innerHTML = html;
+    }
+
+    // --- Escape to avoid XSS on stored text
+    function escapeHtml(s){
+      return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+    }
+
+    // --- Form submit (add or save edit)
+    $form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const text = $input.value.trim();
+      const st = $status.value;
+      if (!text) return;
+      const id = $editId.value;
+
+      if (id){
+        const idx = items.findIndex(x=>x.id===id);
+        if (idx>-1){
+          items[idx].text = text;
+          items[idx].status = st;
+        }
+        $editId.value = '';
+      } else {
+        items.push({ id: uid(), text, status: st, created: Date.now() });
+      }
+      save(); render();
+      $form.reset();
+      $status.value = 'Pending';
+      $input.focus();
+    });
+
+    // --- Delegated list actions
+    $list.addEventListener('click', (e)=>{
+      const li = e.target.closest('li.list-group-item');
+      if (!li) return;
+      const id = li.dataset.id;
+      if (e.target.classList.contains('btn-del')){
+        items = items.filter(x=>x.id!==id);
+        save(); render();
+      }
+      if (e.target.classList.contains('btn-edit')){
+        const it = items.find(x=>x.id===id);
+        if (!it) return;
+        $input.value = it.text;
+        $status.value = it.status;
+        $editId.value = it.id;
+        $input.focus();
+        $input.select();
+        // scroll to form on mobile
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+
+    // double click to quick-edit text
+    $list.addEventListener('dblclick', (e)=>{
+      const li = e.target.closest('li.list-group-item');
+      if (!li) return;
+      const id = li.dataset.id;
+      const it = items.find(x=>x.id===id);
+      if (!it) return;
+      $input.value = it.text;
+      $status.value = it.status;
+      $editId.value = it.id;
+      $input.focus();
+      $input.select();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // status change from inline dropdown
+    $list.addEventListener('change', (e)=>{
+      if (!e.target.classList.contains('status-changer')) return;
+      const li = e.target.closest('li.list-group-item');
+      if (!li) return;
+      const id = li.dataset.id;
+      const it = items.find(x=>x.id===id);
+      if (!it) return;
+      it.status = e.target.value;
+      save(); render();
+    });
+
+    // keyboard: Enter adds, Ctrl+Enter marks Completed
+    $input.addEventListener('keydown', (e)=>{
+      if (e.key === 'Enter' && e.ctrlKey){
+        // quick add as Completed
+        if ($input.value.trim()){
+          $status.value = 'Completed';
+          $form.requestSubmit();
+        }
+      }
+    });
+
+    // Clear all
+    $btnClear.addEventListener('click', ()=>{
+      if (!items.length) return;
+      if (confirm('Ջնջե՞լ բոլոր առաջադրանքները։')){
+        items = []; save(); render();
+      }
+    });
+
+    // Seed examples
+    $btnSeed.addEventListener('click', ()=>{
+      if (items.length && !confirm('Ավելացնե՞լ օրինաչափեր՝ պահպանելով առկա առաջադրանքները։')) return;
+      const now = Date.now();
+      const sample = [
+        {text:'HTML/CSS UI polishing', status:'Completed'},
+        {text:'Ավելացնել JS logic (add/edit/delete)', status:'In Progress'},
+        {text:'LocalStorage սինք և թեթև shortcuts', status:'Pending'},
+      ].map((t,i)=>({id:uid(), text:t.text, status:t.status, created: now - i*60000}));
+      items = items.concat(sample); save(); render();
+    });
+
+    // Init
+    load(); render();
+  })();
+  </script>
+</body>
+</html>
