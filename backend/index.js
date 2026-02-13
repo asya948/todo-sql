@@ -3,11 +3,13 @@ import express from 'express'
 import cors from 'cors'
 import session from 'express-session'
 
+import router from "./router/index.js";
+
+
 const app = express()
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-
 app.use(
     session({
         secret: 'mySecretKey123',
@@ -20,15 +22,16 @@ app.use(
     })
 )
 
-app.use(cors({
-    origin: 'http://localhost:63342',
-    credentials: true
-}))
+app.use(
+    cors({
+        origin: 'http://localhost:63342',
+        credentials: true
+    })
+)
+app.use(router)
 
-// Եթե դեռ չունես router
-app.get('/', (req, res) => {
-    res.send('Server is running!')
-})
+let users = []
+
 
 app.listen(process.env.APP_PORT || 3000, () => {
     console.log('server started')
